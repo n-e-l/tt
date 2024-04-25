@@ -1,4 +1,5 @@
 # TT
+https://github.com/angelocarly/TT/actions/workflows/rust.yml/badge.svg
 Terminal timetracking software.
 
 ## Features
