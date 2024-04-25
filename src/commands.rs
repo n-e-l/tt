@@ -56,7 +56,7 @@ fn write_data(logs: MonthEntry) {
     fs::write(path, parsed).expect("Failed to write");
 }
 
-pub fn log(project: String) {
+pub fn log(project: String, time: Option<&String>) {
 
     let date = chrono::Local::now();
     let mut logs = parse_data(date.year() as u32, date.month());
@@ -72,7 +72,15 @@ pub fn log(project: String) {
         .find(|d| d.day == date.day())
         .expect("month should contain the proper day");
 
-    day.entries.push(WorkEntry {hour: date.hour(), minute: date.minute(), message: project });
+    // Parse the time
+    let mut hour = date.hour();
+    let mut minute = date.minute();
+    if let Some(t) = time {
+        hour = t.split('h').collect::<Vec<&str>>()[0].parse::<u32>().unwrap();
+        minute = t.split('h').collect::<Vec<&str>>()[1].parse::<u32>().unwrap();
+    }
+
+    day.entries.push(WorkEntry {hour: hour, minute: minute, message: project });
 
     write_data(logs);
 }

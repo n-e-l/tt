@@ -9,7 +9,13 @@ fn cli() -> Command {
         .subcommand(
             Command::new("log")
                 .about("Register working on something")
-                .arg(arg!(project: [PROJECT]))
+                .arg(arg!(project: [PROJECT])
+                    .required(true)
+                )
+                .arg(arg!(time: [TIME]).long("time")
+                    .require_equals(true)
+                    .default_missing_value(None)
+                )
         )
         .subcommand(
             Command::new("show")
@@ -22,9 +28,17 @@ fn main() -> std::io::Result<()> {
 
     match matches.subcommand() {
         Some(("log", sub_matches)) => {
-            let project = sub_matches.get_one::<String>("project").map(|s| s.to_string()).expect("Couldn't read project id");
-            commands::log(project);
-            Ok(())
+
+            if let Some(project) = sub_matches.get_one::<String>("project").map(|s| s.to_string()) {
+
+                let time = sub_matches.get_one::<String>("time");
+                commands::log(project, time);
+                Ok(())
+
+            } else {
+                println!("Please provide a project");
+                return Ok(());
+            }
         },
         Some(("show", _sub_matches)) => {
             commands::show();
