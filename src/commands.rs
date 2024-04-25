@@ -1,4 +1,5 @@
 use std::{fs};
+use std::cmp::Ordering;
 use chrono::{Datelike, Timelike};
 use serde::{Deserialize, Serialize};
 
@@ -82,6 +83,22 @@ pub fn log(project: String, time: Option<&String>) {
 
     day.entries.push(WorkEntry {hour: hour, minute: minute, message: project });
 
+    day.entries.sort_by(|a, b| {
+        if a.hour == b.hour {
+            if a.minute < b.minute {
+                Ordering::Less
+            } else if a.minute > b.minute {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            }
+        } else if a.hour < b.hour {
+            Ordering::Less
+        } else {
+            Ordering::Greater
+        }
+    });
+
     write_data(logs);
 }
 
@@ -93,7 +110,7 @@ pub fn show() {
     logs.days.iter().for_each(|d| {
         println!("Day: {}", d.day);
         d.entries.iter().for_each(|l| {
-            println!("- Log: {:02}h{:02} - {}", l.hour, l.minute, l.message);
+            println!("- {:02}h{:02} - {}", l.hour, l.minute, l.message);
         });
     });
     if logs.days.is_empty() {

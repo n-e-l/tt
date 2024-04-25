@@ -4,7 +4,7 @@ Terminal timetracking software.
 
 ## Features
 - Displaying of this month's logged hours.
-- Adding new logs at the current time or a specific time (experimental).
+- Adding new logs at the current time or a specific time
 
 ## Installation
 ```shell
