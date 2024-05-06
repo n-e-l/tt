@@ -52,7 +52,6 @@ fn parse_data(year: u32, month: u32) -> MonthEntry {
 
 fn write_data(logs: MonthEntry) {
     let path = get_current_datafile(logs.year, logs.month);
-    println!("{:?}", logs);
     let parsed = serde_json::to_string(&logs).unwrap();
     fs::write(path, parsed).expect("Failed to write");
 }
@@ -100,12 +99,14 @@ pub fn log(project: String, time: Option<&String>) {
     });
 
     write_data(logs);
+
+    show( None );
 }
 
-pub fn show() {
+pub fn show(month: Option<&String>) {
 
     let date = chrono::Local::now();
-    let logs = parse_data(date.year() as u32, date.month());
+    let logs = parse_data(date.year() as u32, if let Some( m ) = month { m.parse::<u32>().unwrap() } else { date.month() } );
     println!("Month: {}", logs.month);
     logs.days.iter().for_each(|d| {
         println!("Day: {}", d.day);

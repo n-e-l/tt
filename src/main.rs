@@ -20,6 +20,9 @@ fn cli() -> Command {
         .subcommand(
             Command::new("show")
                 .about("Print status")
+                .arg(arg!(month: [MONTH]).long("month")
+                    .required(false)
+                    .default_missing_value(None))
         )
 }
 
@@ -40,8 +43,9 @@ fn main() -> std::io::Result<()> {
                 return Ok(());
             }
         },
-        Some(("show", _sub_matches)) => {
-            commands::show();
+        Some(("show", sub_matches)) => {
+            let month = sub_matches.get_one::<String>("month");
+            commands::show(month);
             Ok(())
         },
         _ => unreachable!()
