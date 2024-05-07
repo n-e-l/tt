@@ -1,5 +1,6 @@
 use std::{fs};
-use std::cmp::Ordering;
+use std::cmp::{Ordering};
+use std::collections::HashMap;
 use chrono::{Datelike, Timelike};
 use serde::{Deserialize, Serialize};
 
@@ -103,18 +104,47 @@ pub fn log(project: String, time: Option<&String>) {
     show( None );
 }
 
-pub fn show(month: Option<&String>) {
+pub fn show(in_month: Option<&String>) {
 
     let date = chrono::Local::now();
-    let logs = parse_data(date.year() as u32, if let Some( m ) = month { m.parse::<u32>().unwrap() } else { date.month() } );
+    let month = if let Some( m ) = in_month { m.parse::<u32>().unwrap() } else { date.month() };
+    let logs = parse_data(date.year() as u32, month );
     println!("Month: {}", logs.month);
     logs.days.iter().for_each(|d| {
-        println!("Day: {}", d.day);
+        println!("{}/{}/{}", date.year(), month, d.day);
         d.entries.iter().for_each(|l| {
             println!("- {:02}h{:02} - {}", l.hour, l.minute, l.message);
         });
     });
     if logs.days.is_empty() {
         println!("No days");
+    }
+}
+
+pub fn total(in_month: Option<&String>) {
+
+    let date = chrono::Local::now();
+    let month = if let Some( m ) = in_month { m.parse::<u32>().unwrap() } else { date.month() };
+    let logs = parse_data(date.year() as u32, month );
+
+    let mut minutes : HashMap<&String, u32> = HashMap::new();
+    logs.days.iter().for_each(|d| {
+
+        let mut prev_entry :Option<&WorkEntry> = None;
+
+        for e in &d.entries {
+            if let Some(previous) = prev_entry {
+                let default_val = 0;
+                let mut time = *minutes.get( &previous.message ).unwrap_or( &default_val );
+                time += ( e.hour - previous.hour ) * 60 + e.minute - previous.minute;
+                minutes.insert(&previous.message, time);
+            }
+
+            prev_entry = Some(&e);
+        }
+    });
+
+    for (key, value) in minutes {
+        println!("{:?}: {}", key, value);
     }
 }

@@ -24,6 +24,13 @@ fn cli() -> Command {
                     .required(false)
                     .default_missing_value(None))
         )
+        .subcommand(
+            Command::new("total")
+                .about("Show the total counts for this month")
+                .arg(arg!(month: [MONTH]).long("month")
+                    .required(false)
+                    .default_missing_value(None))
+        )
 }
 
 fn main() -> std::io::Result<()> {
@@ -46,6 +53,11 @@ fn main() -> std::io::Result<()> {
         Some(("show", sub_matches)) => {
             let month = sub_matches.get_one::<String>("month");
             commands::show(month);
+            Ok(())
+        },
+        Some(("total", sub_matches)) => {
+            let month = sub_matches.get_one::<String>("month");
+            commands::total(month);
             Ok(())
         },
         _ => unreachable!()
