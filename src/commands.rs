@@ -145,6 +145,8 @@ pub fn total(in_month: Option<&String>) {
     });
 
     for (key, value) in minutes {
-        println!("{:?}: {}", key, value);
+        let hour = (value as f32 / 60.0f32).floor();
+        let minute = value % 60;
+        println!("{:?}: {}h{}", key, hour, minute);
     }
 }
