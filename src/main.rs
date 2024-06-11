@@ -18,6 +18,10 @@ fn cli() -> Command {
                 )
         )
         .subcommand(
+            Command::new("write")
+                .about("Write down what's happening")
+        )
+        .subcommand(
             Command::new("show")
                 .about("Print status")
                 .arg(arg!(month: [MONTH]).long("month")
@@ -49,6 +53,10 @@ fn main() -> std::io::Result<()> {
                 println!("Please provide a project");
                 return Ok(());
             }
+        },
+        Some(("write", _)) => {
+            commands::write();
+            Ok(())
         },
         Some(("show", sub_matches)) => {
             let month = sub_matches.get_one::<String>("month");

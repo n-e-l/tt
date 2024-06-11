@@ -1,8 +1,11 @@
 use std::{fs};
+use std::io::Write;
 use std::cmp::{Ordering};
 use std::collections::HashMap;
+use std::fs::File;
 use chrono::{Datelike, Timelike};
 use serde::{Deserialize, Serialize};
+use tempfile::tempdir;
 
 #[derive (Serialize, Deserialize, Debug)]
 #[serde (tag = "type")]
@@ -10,6 +13,7 @@ struct WorkEntry {
     hour: u32,
     minute: u32,
     title: String,
+    message: Option<String>
 }
 #[derive (Serialize, Deserialize, Debug)]
 #[serde (tag = "type")]
@@ -81,7 +85,7 @@ pub fn log(project: String, time: Option<&String>) {
         minute = t.split('h').collect::<Vec<&str>>()[1].parse::<u32>().unwrap();
     }
 
-    day.entries.push(WorkEntry {hour: hour, minute: minute, title: project });
+    day.entries.push(WorkEntry { hour: hour, minute: minute, title: project, message: None });
 
     day.entries.sort_by(|a, b| {
         if a.hour == b.hour {
@@ -102,6 +106,57 @@ pub fn log(project: String, time: Option<&String>) {
     write_data(logs);
 
     show( None );
+}
+
+fn get_editor() -> String {
+    let editor = std::env::var("EDITOR").expect("No EDITOR provided");
+    return editor;
+}
+
+fn launch_editor(path: &str) {
+    std::process::Command::new("/bin/sh")
+        .arg("-c")
+        .arg(format!("{} {}", get_editor(), path))
+        .spawn()
+        .expect("Error: Failed to run editor")
+        .wait()
+        .expect("Error: Editor returned a non-zero status");
+
+}
+
+pub fn write() {
+
+    // Retrieve the current entry
+    let date = chrono::Local::now();
+    let mut logs = parse_data(date.year() as u32, date.month());
+    let day = logs.days
+        .iter_mut()
+        .find(|d| d.day == date.day())
+        .expect("month should contain the proper day");
+    let entry : &mut WorkEntry = day.entries.last_mut().expect("day should contain at least one entry");
+    let current_message = entry.message.clone().unwrap_or("".to_string());
+
+    // Create a directory inside of `std::env::temp_dir()`.
+    let dir = tempdir().unwrap();
+
+    let file_path = dir.path().join("note.md");
+    let mut file = File::create(file_path.clone()).unwrap();
+
+    // Write node data
+    write!(file, "{}", current_message).expect("Couldn't write to temp file");
+
+    // Do vim thingy
+    launch_editor(file_path.as_path().to_str().unwrap());
+
+    let data = fs::read_to_string(file_path).expect("Failed to read file");
+    println!("{}", data);
+
+    drop(file);
+    dir.close().expect("Failed to close directory");
+
+    entry.message = Some(data);
+
+    write_data(logs);
 }
 
 pub fn show(in_month: Option<&String>) {
