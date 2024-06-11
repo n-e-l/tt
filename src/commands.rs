@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 struct WorkEntry {
     hour: u32,
     minute: u32,
-    message: String,
+    title: String,
 }
 #[derive (Serialize, Deserialize, Debug)]
 #[serde (tag = "type")]
@@ -81,7 +81,7 @@ pub fn log(project: String, time: Option<&String>) {
         minute = t.split('h').collect::<Vec<&str>>()[1].parse::<u32>().unwrap();
     }
 
-    day.entries.push(WorkEntry {hour: hour, minute: minute, message: project });
+    day.entries.push(WorkEntry {hour: hour, minute: minute, title: project });
 
     day.entries.sort_by(|a, b| {
         if a.hour == b.hour {
@@ -113,7 +113,7 @@ pub fn show(in_month: Option<&String>) {
     logs.days.iter().for_each(|d| {
         println!("{}/{}/{}", date.year(), month, d.day);
         d.entries.iter().for_each(|l| {
-            println!("- {:02}h{:02} - {}", l.hour, l.minute, l.message);
+            println!("- {:02}h{:02} - {}", l.hour, l.minute, l.title);
         });
     });
     if logs.days.is_empty() {
@@ -135,9 +135,9 @@ pub fn total(in_month: Option<&String>) {
         for e in &d.entries {
             if let Some(previous) = prev_entry {
                 let default_val = 0;
-                let mut time = *minutes.get( &previous.message ).unwrap_or( &default_val );
+                let mut time = *minutes.get( &previous.title ).unwrap_or( &default_val );
                 time += ( e.hour - previous.hour ) * 60 + e.minute - previous.minute;
-                minutes.insert(&previous.message, time);
+                minutes.insert(&previous.title, time);
             }
 
             prev_entry = Some(&e);
@@ -147,6 +147,6 @@ pub fn total(in_month: Option<&String>) {
     for (key, value) in minutes {
         let hour = (value as f32 / 60.0f32).floor();
         let minute = value % 60;
-        println!("{:?}: {}h{}", key, hour, minute);
+        println!("{:?}: {}h{:02}", key, hour, minute);
     }
 }
