@@ -12,14 +12,14 @@ use tempfile::tempdir;
 struct WorkEntry {
     hour: u32,
     minute: u32,
-    title: String,
-    message: Option<String>
+    title: String
 }
 #[derive (Serialize, Deserialize, Debug)]
 #[serde (tag = "type")]
 struct DayEntry {
     day: u32,
-    entries: Vec<WorkEntry>
+    entries: Vec<WorkEntry>,
+    logs: HashMap<String, String>
 }
 
 #[derive (Serialize, Deserialize, Debug)]
@@ -57,22 +57,22 @@ fn parse_data(year: u32, month: u32) -> MonthEntry {
 
 fn write_data(logs: MonthEntry) {
     let path = get_current_datafile(logs.year, logs.month);
-    let parsed = serde_json::to_string(&logs).unwrap();
+    let parsed = serde_json::to_string_pretty(&logs).unwrap();
     fs::write(path, parsed).expect("Failed to write");
 }
 
 pub fn log(project: String, time: Option<&String>) {
 
     let date = chrono::Local::now();
-    let mut logs = parse_data(date.year() as u32, date.month());
+    let mut month_entry = parse_data(date.year() as u32, date.month());
 
     // Add the current day if its missing
-    if !logs.days.iter().any(|d| d.day == date.day()) {
-        logs.days.push(DayEntry{ day: date.day(), entries: Vec::new()});
+    if !month_entry.days.iter().any(|d| d.day == date.day()) {
+        month_entry.days.push(DayEntry{ day: date.day(), entries: Vec::new(), logs: HashMap::new()});
     }
 
     // Retrieve the day
-    let day = logs.days
+    let day = month_entry.days
         .iter_mut()
         .find(|d| d.day == date.day())
         .expect("month should contain the proper day");
@@ -85,7 +85,7 @@ pub fn log(project: String, time: Option<&String>) {
         minute = t.split('h').collect::<Vec<&str>>()[1].parse::<u32>().unwrap();
     }
 
-    day.entries.push(WorkEntry { hour: hour, minute: minute, title: project, message: None });
+    day.entries.push(WorkEntry { hour: hour, minute: minute, title: project });
 
     day.entries.sort_by(|a, b| {
         if a.hour == b.hour {
@@ -103,7 +103,7 @@ pub fn log(project: String, time: Option<&String>) {
         }
     });
 
-    write_data(logs);
+    write_data(month_entry);
 
     show( None );
 }
@@ -134,7 +134,12 @@ pub fn write() {
         .find(|d| d.day == date.day())
         .expect("month should contain the proper day");
     let entry : &mut WorkEntry = day.entries.last_mut().expect("day should contain at least one entry");
-    let current_message = entry.message.clone().unwrap_or("".to_string());
+
+    let current_message = day.logs
+        .iter()
+        .find(|(k, _)| k.as_str().eq(&*entry.title))
+        .map(|(_, v)| v.clone())
+        .unwrap_or("".to_string());
 
     // Create a directory inside of `std::env::temp_dir()`.
     let dir = tempdir().unwrap();
@@ -154,7 +159,7 @@ pub fn write() {
     drop(file);
     dir.close().expect("Failed to close directory");
 
-    entry.message = Some(data);
+    day.logs.insert(entry.title.clone(), data.clone());
 
     write_data(logs);
 }
