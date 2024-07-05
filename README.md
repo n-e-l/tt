@@ -4,8 +4,8 @@ Terminal timetracking software.
 
 ## Features
 - Display total logged hours per month.
-- Log new entries at the current time, or specify it by hand.
-- Maintain scratchpad notes in your favorite $EDITOR.
+- Log new entries at the current time, or specify the time by hand.
+- Open and edit scratchpad notes in your favorite $EDITOR.
 
 ## Installation
 ```shell
