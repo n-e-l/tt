@@ -13,5 +13,5 @@ git clone https://github.com/angelocarly/tt.git
 cd tt
 cargo install --path .
 ```
-You can now use the `tt` command to log your time. Data is stored under `$HOME/.tt/`.
+You can now use the `tt` command to log your time. Data is stored under `$HOME/.tt/`.  
 Use `tt help` to get started.
