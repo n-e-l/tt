@@ -4,6 +4,7 @@ use std::cmp::{Ordering};
 use std::collections::HashMap;
 use std::fs::File;
 use chrono::{Datelike, Timelike};
+use homedir::my_home;
 use serde::{Deserialize, Serialize};
 use tempfile::tempdir;
 
@@ -31,7 +32,7 @@ struct MonthEntry {
 }
 
 fn get_work_dir() -> String {
-    std::env::home_dir().unwrap().to_str().unwrap().to_owned() + "/.tt/"
+    my_home().unwrap().unwrap().to_str().unwrap().to_owned() + "/.tt/"
 }
 
 pub fn get_current_datafile(year: u32, month: u32) -> String {
