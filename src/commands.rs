@@ -109,15 +109,20 @@ pub fn log(project: String, time: Option<&String>) {
     show( None );
 }
 
-fn get_editor() -> String {
-    let editor = std::env::var("EDITOR").expect("No EDITOR provided");
-    return editor;
+fn get_editor(path: &str) -> String {
+    if std::env::consts::OS == "windows"{
+        return format!("{} {}", "nvim", path);
+    }
+    else{
+        let editor = std::env::var("EDITOR").expect("No EDITOR provided");
+        return format!("{} {}", editor, path);
+    }
 }
 
 fn launch_editor(path: &str) {
-    std::process::Command::new("/bin/sh")
-        .arg("-c")
-        .arg(format!("{} {}", get_editor(), path))
+    std::process::Command::new("cmd")
+        .arg("/C")
+        .arg(get_editor(path))
         .spawn()
         .expect("Error: Failed to run editor")
         .wait()
