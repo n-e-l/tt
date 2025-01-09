@@ -106,7 +106,7 @@ pub fn log(project: String, time: Option<&String>) {
 
     write_data(month_entry);
 
-    show( None );
+    show( None, None );
 }
 
 fn get_editor() -> String {
@@ -117,7 +117,7 @@ fn get_editor() -> String {
 fn launch_editor(path: &str) {
     std::process::Command::new("/bin/sh")
         .arg("-c")
-        .arg(format!("{} {}", get_editor(), path))
+        .arg(format!("{} {}", get_editor(), path).as_str())
         .spawn()
         .expect("Error: Failed to run editor")
         .wait()
@@ -165,11 +165,12 @@ pub fn write() {
     write_data(logs);
 }
 
-pub fn show(in_month: Option<&String>) {
+pub fn show(in_month: Option<&String>, in_year: Option<&String>) {
 
     let date = chrono::Local::now();
     let month = if let Some( m ) = in_month { m.parse::<u32>().unwrap() } else { date.month() };
-    let logs = parse_data(date.year() as u32, month );
+    let year = if let Some( m ) = in_year { m.parse::<u32>().unwrap() } else { date.year() as u32 };
+    let logs = parse_data(year, month);
     println!("Month: {}", logs.month);
     logs.days.iter().for_each(|d| {
         println!("{}/{}/{}", date.year(), month, d.day);
@@ -182,11 +183,12 @@ pub fn show(in_month: Option<&String>) {
     }
 }
 
-pub fn total(in_month: Option<&String>) {
+pub fn total(in_month: Option<&String>, in_year: Option<&String>) {
 
     let date = chrono::Local::now();
     let month = if let Some( m ) = in_month { m.parse::<u32>().unwrap() } else { date.month() };
-    let logs = parse_data(date.year() as u32, month );
+    let year = if let Some( m ) = in_year { m.parse::<u32>().unwrap() } else { date.year() as u32 };
+    let logs = parse_data(year, month );
 
     let mut minutes : HashMap<&String, u32> = HashMap::new();
     logs.days.iter().for_each(|d| {

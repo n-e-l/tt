@@ -30,8 +30,11 @@ fn cli() -> Command {
         )
         .subcommand(
             Command::new("total")
-                .about("Show the total counts for this month")
+                .about("Show the total counts for this year")
                 .arg(arg!(month: [MONTH]).long("month")
+                    .required(false)
+                    .default_missing_value(None))
+                .arg(arg!(year: [YEAR]).long("year")
                     .required(false)
                     .default_missing_value(None))
         )
@@ -60,12 +63,14 @@ fn main() -> std::io::Result<()> {
         },
         Some(("show", sub_matches)) => {
             let month = sub_matches.get_one::<String>("month");
-            commands::show(month);
+            let year = sub_matches.get_one::<String>("year");
+            commands::show(month, year);
             Ok(())
         },
         Some(("total", sub_matches)) => {
             let month = sub_matches.get_one::<String>("month");
-            commands::total(month);
+            let year = sub_matches.get_one::<String>("year");
+            commands::total(month, year);
             Ok(())
         },
         _ => unreachable!()
