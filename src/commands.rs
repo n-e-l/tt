@@ -13,7 +13,8 @@ use tempfile::tempdir;
 struct WorkEntry {
     hour: u32,
     minute: u32,
-    title: String
+    title: String,
+    id: String
 }
 #[derive (Serialize, Deserialize, Debug)]
 #[serde (tag = "type")]
@@ -62,7 +63,7 @@ fn write_data(logs: MonthEntry) {
     fs::write(path, parsed).expect("Failed to write");
 }
 
-pub fn log(project: String, time: Option<&String>) {
+pub fn log(project: String, id: String, time: Option<&String>) {
 
     let date = chrono::Local::now();
     let mut month_entry = parse_data(date.year() as u32, date.month());
@@ -86,7 +87,7 @@ pub fn log(project: String, time: Option<&String>) {
         minute = t.split('h').collect::<Vec<&str>>()[1].parse::<u32>().unwrap();
     }
 
-    day.entries.push(WorkEntry { hour: hour, minute: minute, title: project });
+    day.entries.push(WorkEntry { hour: hour, minute: minute, title: project, id });
 
     day.entries.sort_by(|a, b| {
         if a.hour == b.hour {
@@ -175,7 +176,7 @@ pub fn show(in_month: Option<&String>, in_year: Option<&String>) {
     logs.days.iter().for_each(|d| {
         println!("{}/{}/{}", date.year(), month, d.day);
         d.entries.iter().for_each(|l| {
-            println!("- {:02}h{:02} - {}", l.hour, l.minute, l.title);
+            println!("- {:02}h{:02} - {} - {}", l.hour, l.minute, l.id, l.title);
         });
     });
     if logs.days.is_empty() {

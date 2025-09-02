@@ -9,6 +9,9 @@ fn cli() -> Command {
         .subcommand(
             Command::new("log")
                 .about("Register working on something")
+                .arg(arg!(id: [ID])
+                    .required(true)
+                )
                 .arg(arg!(project: [PROJECT])
                     .required(true)
                 )
@@ -47,11 +50,14 @@ fn main() -> std::io::Result<()> {
         Some(("log", sub_matches)) => {
 
             if let Some(project) = sub_matches.get_one::<String>("project").map(|s| s.to_string()) {
-
-                let time = sub_matches.get_one::<String>("time");
-                commands::log(project, time);
-                Ok(())
-
+                if let Some(id) = sub_matches.get_one::<String>("id").map(|s| s.to_string()) {
+                    let time = sub_matches.get_one::<String>("time");
+                    commands::log(project, id, time);
+                    Ok(())
+                } else {
+                    println!("Please provide an id");
+                    return Ok(());
+                }
             } else {
                 println!("Please provide a project");
                 return Ok(());
